@@ -167,7 +167,7 @@ class Avatar {
               !openings.includes[ topSpace -1 ] ) ||
             ( this.y > topSpace * game.rowHeight  &&
               !openings.includes[ bottomSpace +1 ] ) ) {
-          this.velocity = - this.velocity;
+          this.velocity = - this.velocity / 2;
         }
       }
     }
@@ -431,7 +431,7 @@ class Loop {
       .setTextColor('yellow')
       .text('LAPS: ' + game.laps.total, 0,20)
       .text('X: ' + game.avatar.x.toFixed(0), 0,50)
-      .text('Y: ' + (game.height - game.avatar.y - game.avatar.height).toFixed(0), 60,50)
+      .text('Y: ' + (game.height - game.avatar.y - game.avatar.height).toFixed(0), 80,50)
       .text('VEL: ' + ( - game.avatar.velocity.toFixed(2) ), 0,80)
       .text('WALLS: ' + game.walls.passed, 0,110)
       .text('DECKS: ' + game.hits.total, 0,140)
