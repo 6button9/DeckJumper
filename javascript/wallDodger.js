@@ -121,7 +121,6 @@ class Avatar {
     let collision = true;
     let offset = [];
     let localDamage = 0;
-    game.damage.setCurrent(0);
     const topSpace = Math.floor(( this.y + game.damage.sensetivity ) / 100);
     const bottomSpace = Math.floor(( this.y + ( 100 - game.damage.sensetivity )) / 100);
     if( openings.includes(topSpace )
@@ -290,8 +289,6 @@ class Wall {
   calcPosition() {
     if( this._x >= ( game.avatar.x - 90 ) && this._x <= (game.avatar.x + 100)) { 
       this.skateboards = game.avatar.checkCollisions(this.openings, this.skateboards, this._x);
-    } else {
-      game.damage.setCurrent(0);
     }
     this._x -= game.frameRate / game.walls.speed;
     if( this._x < -100 ) {
@@ -435,7 +432,6 @@ class Loop {
       .text('VEL: ' + ( - game.avatar.velocity.toFixed(2) ), 0,80)
       .text('WALLS: ' + game.walls.passed, 0,110)
       .text('DECKS: ' + game.hits.total, 0,140)
-      .text('DAMAGE: ' + game.damage.current, 0,170)
   }
   calcPositions() {
     game.items.forEach( item => item.calcPosition() );
@@ -520,24 +516,13 @@ var game = {
     },
   },
   damage: {
-    sensetivity: 20,
+    sensetivity: 5,
     addToSensetivity: function(by) {
       game.damage.sensetivity += by;
     },
-    current: 0,
-    setCurrent: function(newDamage) {
-      game.damage.current = newDamage;
-    },
-    total: 0,
-    addToTotal: function(newDamage) {
-      if( newDamage !== Infinity ) {
-        game.damage.total += newDamage;
-      }
-      record.record('game_damage_addToTotal',game.damage.total, newDamage);
-    },
   },
   file: {
-    save: function(fileName = 'deck_jumper_game') {
+    save: function(fileName = 'wall_dodger_game') {
       const gameState = {
         avatar: {
           x: game.avatar.x,
@@ -545,7 +530,7 @@ var game = {
         },
         loop_holdTime: game.loop.holdTime,
         items: game.items,
-        damage_total: game.damage.total,
+        laps_total: game.laps.total,
         walls_passed: game.walls.passed,
         hits_hits: game.hits.hits,
         hits_total: game.hits.total,
@@ -554,7 +539,7 @@ var game = {
       localStorage.setItem(fileName, gameStateJSON);
       record.record('game_file_save',{gameStateJSON}).toConsole();
     },
-    load: (fileName = 'deck_jumper_game') => {
+    load: (fileName = 'wall_dodger_game') => {
       const gameStateJSON = localStorage.getItem(fileName);
       if( gameStateJSON !== null ) {
         const gameStateData = JSON.parse(gameStateJSON);
@@ -564,7 +549,7 @@ var game = {
         gameStateData.items.forEach( (item,i) => {
           game.items[i] = Wall.createFromStateObject(item);
         });
-        game.damage.total = gameStateData.damage_total;
+        game.laps.total = gameStateData.laps_total;
         game.walls.passed = gameStateData.walls_passed;
         game.hits.hits = gameStateData.hits_hits;
         game.hits.total = gameStateData.hits_total;
