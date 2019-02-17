@@ -160,7 +160,7 @@ class Avatar {
       //})
       //game.damage.setCurrent(Math.min(...offset));
       //game.damage.addToTotal(game.damage.current);
-      if( (this.x + 10) < wallX ) {
+      if( (this.x +95) < wallX ) {
         this.x = wallX - 100;
       } else {
         if( ( this.y < topSpace * game.rowHeight  &&
@@ -430,7 +430,8 @@ class Loop {
     this.menu
       .setTextColor('yellow')
       .text('LAPS: ' + game.laps.total, 0,20)
-      .text('Y: ' + (game.height - game.avatar.y - game.avatar.height).toFixed(0), 0,50)
+      .text('X: ' + game.avatar.x.toFixed(0), 0,50)
+      .text('Y: ' + (game.height - game.avatar.y - game.avatar.height).toFixed(0), 60,50)
       .text('VEL: ' + ( - game.avatar.velocity.toFixed(2) ), 0,80)
       .text('WALLS: ' + game.walls.passed, 0,110)
       .text('DECKS: ' + game.hits.total, 0,140)
@@ -455,7 +456,7 @@ var game = {
   height: 700,
   width: 1300,
   rowHeight: 100,
-  rowWidth: 100,
+  columnWidth: 100,
   setGameWidth: function(newWidth) {
     if( Number(newWidth) ) {
       game.width = Number(newWidth);
@@ -510,7 +511,6 @@ var game = {
   scores: {
     reset: () => {
       game.laps.total = 0;
-      game.damage.total = 0;
       game.walls.passed = 0;
       game.hits.total = 0;
       game.hits.hits = {};
