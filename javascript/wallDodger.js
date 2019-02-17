@@ -90,8 +90,10 @@ class Avatar {
        this.x = 200;
        game.laps.inc();
      }
-     if( this.x < 0 )
+     if( this.x < 0 ) {
        this.x = 200;
+       game.laps.dec();
+     }
      this.y = this.y + this.velocity * dt;
      this.velocity += this.acceleration * dt;
      if( this.y < 0 ) {
@@ -115,15 +117,15 @@ class Avatar {
     this.x +=x;
     this.y +=y;
   }
-  checkCollisions(openingArray, skateboards, wallX) {
+  checkCollisions(openings, skateboards, wallX) {
     let collision = true;
     let offset = [];
     let localDamage = 0;
     game.damage.setCurrent(0);
     const topSpace = Math.floor(( this.y + game.damage.sensetivity ) / 100);
     const bottomSpace = Math.floor(( this.y + ( 100 - game.damage.sensetivity )) / 100);
-    if( openingArray.includes(topSpace )
-      && openingArray.includes(bottomSpace) ) {
+    if( openings.includes(topSpace )
+      && openings.includes(bottomSpace) ) {
       collision = false;
     }
     const returnSkateboards = skateboards.map( (skateboard) => {
@@ -147,7 +149,7 @@ class Avatar {
      }                              
     });
     if( collision ) {
-      //openingArray.forEach( opening => {
+      //openings.forEach( opening => {
         //if( this.y <= ((opening * 100) - game.damage.sensetivity ) ) {
           //localDamage = Math.ceil((opening * 100) - game.damage.sensetivity - this.y);
           //offset.push(localDamage);
@@ -158,8 +160,16 @@ class Avatar {
       //})
       //game.damage.setCurrent(Math.min(...offset));
       //game.damage.addToTotal(game.damage.current);
-      if( (this.x + 25) < wallX )
+      if( (this.x + 10) < wallX ) {
         this.x = wallX - 100;
+      } else {
+        if( ( this.y < topSpace * game.rowHeight  &&
+              !openings.includes[ topSpace -1 ] ) ||
+            ( this.y > topSpace * game.rowHeight  &&
+              !openings.includes[ bottomSpace +1 ] ) ) {
+          this.velocity = - this.velocity;
+        }
+      }
     }
     return returnSkateboards;
   }
@@ -419,7 +429,7 @@ class Loop {
   postData() {
     this.menu
       .setTextColor('yellow')
-      .text(game.laps.total, 0,20)
+      .text('LAPS: ' + game.laps.total, 0,20)
       .text('Y: ' + (game.height - game.avatar.y - game.avatar.height).toFixed(0), 0,50)
       .text('VEL: ' + ( - game.avatar.velocity.toFixed(2) ), 0,80)
       .text('WALLS: ' + game.walls.passed, 0,110)
@@ -444,6 +454,8 @@ var game = {
   frameRate: 1000/60,
   height: 700,
   width: 1300,
+  rowHeight: 100,
+  rowWidth: 100,
   setGameWidth: function(newWidth) {
     if( Number(newWidth) ) {
       game.width = Number(newWidth);
@@ -490,6 +502,9 @@ var game = {
     total: 0,
     inc: function () {
       game.laps.total++;
+    },
+    dec: function () {
+      game.laps.total--;
     },
   },
   scores: {
