@@ -159,7 +159,7 @@ class Avatar {
       //})
       //game.damage.setCurrent(Math.min(...offset));
       //game.damage.addToTotal(game.damage.current);
-      if( (this.x +95) < wallX ) {
+      if( (this.x +90) < wallX ) {
         this.x = wallX - 100;
       } else {
         if( ( this.y < topSpace * game.rowHeight  &&
