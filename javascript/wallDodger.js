@@ -85,7 +85,7 @@ class Avatar {
     record.record('avatar_setJumpPower', this.jumpPower );
   }
   calcPosition( dt = 2) {
-     this.x += 2;
+     this.x += game.avatarSpeed;
      if( this.x > game.width ) {
        this.x = 200;
        game.laps.inc();
@@ -101,9 +101,9 @@ class Avatar {
          this.velocity = -0.2;
        this.y = 0;
      }
-     else if( this.y > ( game.height - 100) ) {
+     else if( this.y > ( game.height - game.rowHeight) ) {
        this.velocity = 0;
-       this.y = game.height - 100;
+       this.y = game.height - game.rowHeight;
      }
   }
   increaseVelocityUp( by ) {
@@ -121,8 +121,8 @@ class Avatar {
     let collision = true;
     let offset = [];
     let localDamage = 0;
-    const topSpace = Math.floor(( this.y + game.damage.sensetivity ) / 100);
-    const bottomSpace = Math.floor(( this.y + ( 100 - game.damage.sensetivity )) / 100);
+    const topSpace = Math.floor(( this.y + game.damage.sensetivity ) / game.rowHeight);
+    const bottomSpace = Math.floor(( this.y + ( game.rowHeight - game.damage.sensetivity )) / game.rowHeight);
     if( openings.includes(topSpace )
       && openings.includes(bottomSpace) ) {
       collision = false;
@@ -159,7 +159,7 @@ class Avatar {
       //})
       //game.damage.setCurrent(Math.min(...offset));
       //game.damage.addToTotal(game.damage.current);
-      if( (this.x +90) < wallX ) {
+      if( (this.x + (100 - game.avatarSpeed - game.frameRate / game.walls.speed -1)) < wallX ) {
         this.x = wallX - 100;
       } else {
         if( ( this.y < topSpace * game.rowHeight  &&
@@ -186,7 +186,7 @@ class Avatar {
     const urlString = './graphics/pos' + this.position + '.png';
     menu
       .icon('face', this.x + 20, this.y+5,null,'pink',30)
-      .img(urlString,this.x, this.y + 37,null,100,60)
+      .img(urlString,this.x, this.y + 37,null,game.columnWidth,60)
   }
 
 }
@@ -276,15 +276,15 @@ class Wall {
     let j = 0;
     for(let i = 0; i < game.rows; i++) {
       if( !this.openings.includes(i) ) {
-        menu.img('./graphics/concreteBlock1.png', x, i*100, null, 100,100);
+        menu.img('./graphics/concreteBlock1.png', x, i*game.rowHeight, null, game.columnWidth, game.rowHeight);
       } else {
         if( this.skateboards[j].url.url !== 'blank' ) {
-          menu.img(this.skateboards[j].url.url, x, i*100, null, 100,100);
+          menu.img(this.skateboards[j].url.url, x, i*game.rowHeight, null, game.columnWidth, game.rowHeight);
         }
         j++;
       }
     }
-    menu.text(x.toFixed(0), x + 25, 660)
+    menu.text(x.toFixed(0), x + 25, game.height - 25)
   }
   calcPosition() {
     if( this._x >= ( game.avatar.x - 90 ) && this._x <= (game.avatar.x + 100)) { 
@@ -357,6 +357,7 @@ class Loop {
             break;
         }
       }
+      document.ontouchstart = 
       document.onmousedown = () => game.avatar.jump();
       if( this.firstWall ) {
         this.firstWall = false;
@@ -387,6 +388,7 @@ class Loop {
     this.isStarted = false;
     document.onkeydown = null;
     document.onmousedown = null;
+    document.ontouchstart = null;
     clearTimeout(this.holdTimeout);
     clearInterval(this.interval);
     clearInterval(this.wallsInterval);
@@ -449,6 +451,7 @@ class Loop {
 }
 
 var game = {
+  avatarSpeed: 2,
   frameRate: 1000/60,
   height: 700,
   width: 1300,
@@ -457,6 +460,26 @@ var game = {
   setGameWidth: function(newWidth) {
     if( Number(newWidth) ) {
       game.width = Number(newWidth);
+    }
+  },
+  setAvatarSpeed: function(newSpeed) {
+    if( Number(newSpeed) ) {
+      game.avatarSpeed = Number(newSpeed);
+    }
+  },
+  setGameObjectFromString: function(str) {
+    const objectPair = str.split('=');
+    console.log({objectPair});
+    if( objectPair.length === 2 &&
+        typeof Number(objectPair[1]) === 'number' ) {
+      switch( objectPair[0] ) {
+        case 'game_width':
+          game.setGameWidth(Number(objectPair[1]));
+          break;
+        case 'avatar_speed':
+          game.setAvatarSpeed(Number(objectPair[1]));
+          break;
+      }
     }
   },
   loop: Loop.init(),
@@ -520,6 +543,12 @@ var game = {
     sensetivity: 5,
     addToSensetivity: function(by) {
       game.damage.sensetivity += by;
+      if( game.damage.sensetivity > 50 ) {
+              game.damage.sensetivity = 50;
+      }
+      if( game.damage.sensetivity < 5 ) {
+              game.damage.sensetivity = 5;
+      }
     },
   },
   file: {
@@ -666,7 +695,7 @@ function main() {
       ]
      )
     .input('',640,0, (e) => {
-        game.setGameWidth( e.target.value );
+        game.setGameObjectFromString( e.target.value );
         game.loop.draw();
       },
       { deleteOnInput: false }
@@ -682,11 +711,15 @@ main();
 
 document.body.onload = () => {
   game.width = window.innerWidth -4;
+  game.height = window.innerHeight -4;
+  game.rowHeight = game.height / game.rows;
   game.file.load();
 }
 
 document.body.onresize = () => {
   game.width = window.innerWidth -4;
+  game.height = window.innerHeight -40;
+  game.rowHeight = game.height / game.rows;
   game.loop.draw();
 }
 
