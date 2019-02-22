@@ -342,10 +342,12 @@ class Loop {
             break;
           case 'a' :
           case 'A' :
+          case '4' :
             game.avatar.moveBy(-25,0);
             break;
           case 'd' :
           case 'D' :
+          case '6' :
             game.avatar.moveBy(25,0);
             break;
           case 'x' :
